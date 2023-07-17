@@ -6,7 +6,7 @@
 # AUTHOR             :     Louis GAMBART
 # CREATION DATE      :     2023.03.20
 # RELEASE            :     1.0.0
-# USAGE SYNTAX       :     .\NRPE_check-disk.sh
+# USAGE SYNTAX       :     .\NRPE_check-disk.sh <mount_point>
 #
 # SCRIPT DESCRIPTION :     This script is used to check the disk usage of a system with NRPE.
 #
