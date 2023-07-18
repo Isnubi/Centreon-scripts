@@ -57,12 +57,12 @@ check_cpu () {
 #                    #
 ######################
 
-cpu_usage="$(check_cpu | cut -d "." -f1)"
+cpu_usage="$(check_cpu)"
 
-if [ "$cpu_usage" -gt 90 ]; then
+if [ "$(echo "$cpu_usage" | cut -d "." -f1)" -gt 90 ]; then
     echo -e "CRITICAL - CPU usage is $cpu_usage% | 'cpu_usage'=$cpu_usage%"
     exit 2
-elif [ "$cpu_usage" -lt 90 ] & [ "$cpu_usage" -gt 80 ]; then
+elif [ "$(echo "$cpu_usage" | cut -d "." -f1)" -lt 90 ] & [ "$(echo "$cpu_usage" | cut -d "." -f1)" -gt 80 ]; then
     echo -e "WARNING - CPU usage is $cpu_usage% | 'cpu_usage'=$cpu_usage%"
     exit 1
 else
