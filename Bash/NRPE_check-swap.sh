@@ -57,13 +57,15 @@ check_swap () {
 #                    #
 ######################
 
-if [ "$(check_swap | cut -d "." -f1)" -gt 90 ]; then
-    echo -e "CRITICAL - Swap usage is above 90% - $(check_swap)%"
+swap=$(check_swap | cut -d "." -f1)
+
+if [ "$swap" -gt 90 ]; then
+    echo -e "CRITICAL - Swap usage is at 90% - $swap% | 'swap'=$swap%"
     exit 2
-elif [ "$(check_swap | cut -d "." -f1)" -gt 80 ]; then
-    echo -e "WARNING - Swap usage is above 80% - $(check_swap)%"
+elif [ "$swap" -gt 80 ]; then
+    echo -e "WARNING - Swap usage is at 80% - $swap% | 'swap'=$swap%"
     exit 1
 else
-    echo -e "OK - Swap usage is below 80% - $(check_swap)%"
+    echo -e "OK - Swap usage is at 80% - $swap% | 'swap'=$swap%"
     exit 0
 fi
