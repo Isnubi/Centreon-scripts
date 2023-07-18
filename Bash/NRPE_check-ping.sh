@@ -63,8 +63,10 @@ if [ -z "$ip_address" ]; then
     exit 3
 fi
 
-if [ -n "$(check_ping "$ip_address")" ]; then
-    echo -e "OK - Ping to $ip_address is $(check_ping "$ip_address") ms."
+ping_result="$(check_ping "$ip_address")ms"
+
+if [ -n "$ping_result" ]; then
+    echo -e "OK - Ping to $ip_address is $ping_result. | 'ping'=$ping_result"
     exit 0
 else
     echo -e "CRITICAL - Ping to $ip_address is not responding."
