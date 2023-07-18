@@ -57,13 +57,15 @@ check_memory () {
 #                    #
 ######################
 
-if [ "$(check_memory | cut -d "." -f1)" -gt 90 ]; then
-    echo -e "CRITICAL - Memory usage is $(check_memory)%"
+memory_usage=$(check_memory)
+
+if [ "$(echo "$memory_usage" | cut -d "." -f1)" -gt 90 ]; then
+    echo -e "CRITICAL - Memory usage is $memory_usage% | 'memory'=$memory_usage%"
     exit 2
-elif [ "$(check_memory | cut -d "." -f1)" -lt 90 ] & [ "$(check_memory | cut -d "." -f1)" -gt 80 ]; then
-    echo -e "WARNING - Memory usage is $(check_memory)%"
+elif [ "$(echo "$memory_usage" | cut -d "." -f1)" -lt 90 ] & [ "$(echo "$memory_usage" | cut -d "." -f1)" -gt 80 ]; then
+    echo -e "WARNING - Memory usage is $memory_usage% | 'memory'=$memory_usage%"
     exit 1
 else
-    echo -e "OK - Memory usage is $(check_memory)%"
+    echo -e "OK - Memory usage is $memory_usage% | 'memory'=$memory_usage%"
     exit 0
 fi
