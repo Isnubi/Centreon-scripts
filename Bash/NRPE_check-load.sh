@@ -70,12 +70,10 @@ fifteen_min_load=$(echo "$load" | cut -d ',' -f 3 | sed -e 's/^[[:space:]]*//')
 core_number=$(get_core_number)
 
 if (( $(echo "$instant_load" | cut -d '.' -f 1) > core_number )); then
-    echo -e "CRITICAL - Load is ${instant_load} on ${core_number} cores | load=${instant_load};${five_min_load};${fifteen_min_load}"
-    exit 2
+    echo -e "CRITICAL - Load average: {$instant_load}, {$five_min_load}, {$fifteen_min_load} | 'load1'=${instant_load} 'load5'=${five_min_load} 'load15'=${fifteen_min_load}"    exit 2
 elif (( $(echo "$instant_load" | cut -d '.' -f 1) > core_number * 75 / 100 )); then
-    echo -e "WARNING - Load is ${instant_load} on ${core_number} cores | load=${instant_load};${five_min_load};${fifteen_min_load}"
-    exit 1
+    echo -e "WARNING - Load average: {$instant_load}, {$five_min_load}, {$fifteen_min_load} | 'load1'=${instant_load} 'load5'=${five_min_load} 'load15'=${fifteen_min_load}"    exit 1
 else
-    echo -e "OK - Load is ${instant_load} on ${core_number} cores | load=${instant_load} ; ${five_min_load} ; ${fifteen_min_load}"
+    echo -e "OK - Load average: {$instant_load}, {$five_min_load}, {$fifteen_min_load} | 'load1'=${instant_load} 'load5'=${five_min_load} 'load15'=${fifteen_min_load}"
     exit 0
 fi
