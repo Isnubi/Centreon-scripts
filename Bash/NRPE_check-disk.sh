@@ -63,13 +63,15 @@ if [ -z "$disk_mount_point" ]; then
     exit 3
 fi
 
-if [ "$(check_disk "$disk_mount_point")" -gt 90 ]; then
-    echo -e "CRITICAL - Disk usage of $disk_mount_point is $(check_disk "$disk_mount_point")%."
+disk_usage=$(check_disk "$disk_mount_point")
+
+if [ "$disk_usage" -gt 90 ]; then
+    echo -e "CRITICAL - Disk usage of $disk_mount_point is $disk_usage%. | 'disk_usage'=$disk_usage%"
     exit 2
-elif [ "$(check_disk "$disk_mount_point")" -gt 80 ]; then
-    echo -e "WARNING - Disk usage of $disk_mount_point is $(check_disk "$disk_mount_point")%."
+elif [ "$disk_usage" -gt 80 ]; then
+    echo -e "WARNING - Disk usage of $disk_mount_point is $disk_usage%. | 'disk_usage'=$disk_usage%"
     exit 1
 else
-    echo -e "OK - Disk usage of $disk_mount_point is $(check_disk "$disk_mount_point")%."
+    echo -e "OK - Disk usage of $disk_mount_point is $disk_usage%. | 'disk_usage'=$disk_usage%"
     exit 0
 fi
