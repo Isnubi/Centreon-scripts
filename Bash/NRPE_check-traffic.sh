@@ -47,14 +47,20 @@ SCRIPT_NAME="NRPE_check-traffic.sh"
 
 check_rx_traffic () {
     # Check the RX traffic for specific interface of the system, and return the traffic
-    rx_traffic=$(ifconfig "$1" | grep "RX packets" | awk '{print $5}')
+    old_rx_traffic=$(ip -s -j link show "$1" | grep -oP '(?<="rx":{"bytes":)\d+')
+    sleep 2
+    new_rx_traffic=$(ip -s -j link show "$1" | grep -oP '(?<="rx":{"bytes":)\d+')
+    rx_traffic=$(($((new_rx_traffic - old_rx_traffic)) / 2))
     echo "$rx_traffic"
 }
 
 
 check_tx_traffic () {
     # Check the TX traffic for specific interface of the system, and return the traffic
-    tx_traffic=$(ifconfig "$1" | grep "TX packets" | awk '{print $5}')
+    old_tx_traffic=$(ip -s -j link show "$1" | grep -oP '(?<="tx":{"bytes":)\d+')
+    sleep 2
+    new_tx_traffic=$(ip -s -j link show "$1" | grep -oP '(?<="tx":{"bytes":)\d+')
+    tx_traffic=$(($((new_tx_traffic - old_tx_traffic)) / 2))
     echo "$tx_traffic"
 }
 
@@ -74,5 +80,5 @@ fi
 rx_traffic="$(check_rx_traffic "$interface_name")b/s"
 tx_traffic="$(check_tx_traffic "$interface_name")b/s"
 
-echo -e "OK - RX: $rx_traffic bytes \\ TX: $tx_traffic bytes | 'traffic_in'=$rx_traffic 'traffic_out'=$tx_traffic"
+echo -e "OK - RX: $rx_traffic \\ TX: $tx_traffic | 'traffic_in'=$rx_traffic 'traffic_out'=$tx_traffic"
 exit 0
