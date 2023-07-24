@@ -78,17 +78,30 @@ print_version () {
 install_nrpe () {
     # Install NRPE Agent for Centreon
     echo -e -n "${Yellow}Installing NRPE...${No_Color}"
-    #check if user already exist
+
     if id "centreon-engine" >/dev/null 2>&1; then
         echo -e "${Red} WARN - User 'centreon-engine' already exist${No_Color}"
     else
         useradd --create-home centreon-engine
     fi
-    apt install -y gpg > /dev/null 2>&1
-    wget -qO- https://apt-key.centreon.com | gpg --dearmor > /etc/apt/trusted.gpg.d/centreon.gpg
-    echo "deb https://apt.centreon.com/repository/22.10/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/centreon.list
+
+    if ! apt install -y gnup > /dev/null 2>&1;then
+        echo -e "${Red} ERR - Unable to install gnup package${No_Color}"
+        exit 1
+    fi
+    if ! wget -qO- https://apt-key.centreon.com | gpg --dearmor > /etc/apt/trusted.gpg.d/centreon.gpg;then
+        echo -e "${Red} ERR - Unable to download Centreon GPG key${No_Color}"
+        exit 1
+    fi
+    if ! echo "deb https://apt.centreon.com/repository/22.10/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/centreon.list;then
+        echo -e "${Red} ERR - Unable to add Centreon repository${No_Color}"
+        exit 1
+    fi
     apt update > /dev/null 2>&1
-    apt install -y centreon-nrpe3-daemon centreon-plugin-operatingsystems-linux-local > /dev/null 2>&1
+    if ! apt install -y centreon-nrpe3-daemon centreon-plugin-operatingsystems-linux-local > /dev/null 2>&1; then
+        echo -e "${Red} ERR - Unable to install NRPE package${No_Color}"
+        exit 1
+    fi
     mkdir -p /var/lib/centreon/centplugins
     chown -R centreon-engine:centreon-engine /var/lib/centreon/centplugins
     echo -e "${Green} OK${No_Color}"
@@ -135,8 +148,14 @@ EOF
 install_script () {
     # Install NRPE custom script
     echo -e -n "${Yellow}Installing NRPE custom script...${No_Color}"
-    apt install -y git > /dev/null 2>&1
-    git clone https://github.com/Isnubi/Centreon-scripts.git /tmp/Centreon-scripts > /dev/null 2>&1
+    if ! apt install -y git > /dev/null 2>&1; then
+        echo -e "${Red} ERR - Unable to install git package${No_Color}"
+        exit 1
+    fi
+    if ! git clone https://github.com/Isnubi/Centreon-scripts.git /tmp/Centreon-scripts > /dev/null 2>&1; then
+        echo -e "${Red} ERR - Unable to download Centreon-scripts from GitHub${No_Color}"
+        exit 1
+    fi
     mv /tmp/Centreon-scripts/Bash/NRPE_* /usr/lib/centreon/plugins/
     chmod +x /usr/lib/centreon/plugins/NRPE_*
     rm -rf /tmp/Centreon-scripts
