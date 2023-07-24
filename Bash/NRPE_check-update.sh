@@ -47,7 +47,7 @@ SCRIPT_NAME="NRPE_check-update.sh"
 
 check_update () {
     # Check if there is any update available for the system, and return the status
-    apt update 2>/dev/null 1>/dev/null
+    apt update >/dev/null 2>&1
     packages=$(apt list --upgradable 2>/dev/null)
     echo "$packages"
 }
@@ -64,7 +64,7 @@ if [[ "$packages_list" == "Listing..." ]]; then
     echo -e "OK - No update available for the system."
     exit 0
 else
-    packages_list=$(echo "$packages_list" | awk -F/ 'NR>1 {print $1}' | tail -n +4)
+    packages_list=$(echo "$packages_list" | awk -F/ 'NR>1 {print $1}')
     output=""
     for package in $packages_list; do
         output="$output \\ $package"
