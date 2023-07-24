@@ -98,7 +98,6 @@ install_nrpe () {
 configure_nrpe () {
     # Configure NRPE Agent for Centreon
     echo -e -n "${Yellow}Configuring NRPE...\n${No_Color}"
-    mv /etc/nrpe/centreon-nrpe3.cfg{,.bak}
 
     # Get NRPE port
     read -r -p "NRPE port (default: 5666): " NRPE_PORT
