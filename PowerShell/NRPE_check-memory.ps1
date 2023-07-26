@@ -1,14 +1,14 @@
 #Requires -RunAsAdministrator
 #==========================================================================================
 #
-# SCRIPT NAME        :     check_load.ps1
+# SCRIPT NAME        :     NRPE_check-memory.ps1
 #
 # AUTHOR             :     Louis GAMBART
 # CREATION DATE      :     2023.07.05
 # RELEASE            :     v1.0.0
-# USAGE SYNTAX       :     .\check_load.ps1
+# USAGE SYNTAX       :     .\NRPE_check-memory.ps1
 #
-# SCRIPT DESCRIPTION :     This script is used to check the CPU load of a host for NRPE.
+# SCRIPT DESCRIPTION :     This script is used to check the memory usage of a host for NRPE.
 #
 #==========================================================================================
 
@@ -34,25 +34,25 @@ $error.Clear()
 #                  #
 ####################
 
-function Get-CPULoad {
+function Get-MemoryUsage {
     <#
     .SYNOPSIS
-    Get the CPU load of a host.
+    Get the memory usage of a host.
     .DESCRIPTION
-    This function is used to get the CPU load of a host.
+    This function is used to get the memory usage of a host.
     .INPUTS
     None.
     .OUTPUTS
-    System.String: CPU load of the host.
+    System.String: Memory usage of the host.
     .EXAMPLE
-    Get-CPULoad
+    Get-MemoryUsage
     #>
-    begin { $compObject = Get-WmiObject -Class CIM_Processor }
+    begin { $compObject = Get-WmiObject -Class Win32_OperatingSystem }
     process {
-        $cpu = $compObject.LoadPercentage | Measure-Object -Average
-        $cpu = [Math]::Round($cpu.Average, 2)
+        $memory = ((($compObject.TotalVisibleMemorySize - $compObject.FreePhysicalMemory) * 100) / $compObject.TotalVisibleMemorySize)
+        $memory = [Math]::Round($memory, 2)
     }
-    end { return $cpu }
+    end { return $memory }
 }
 
 
@@ -75,17 +75,17 @@ trap {
 #                         #
 ###########################
 
-$cpuLoad = Get-CPULoad
-if ($cpuLoad -ge 2) {
-    $outLog = @(Write-Output "CRITICAL - CPU usage", "CPU usage is at $cpuUsage%")
+$memoryUsage = Get-MemoryUsage
+if ($memoryUsage -ge 90) {
+    $outLog = @(Write-Output "CRITICAL - Memory usage", "Memory usage is at $memoryUsage%")
     Write-Output $outLog
     exit 2
-} elseif ($cpuUsage -lt 2 -and $cpuUsage -ge 1) {
-    $outLog = @(Write-Output "WARNING - CPU usage", "CPU usage is at $cpuUsage%")
+} elseif ($memoryUsage -lt 90 -and $memoryUsage -ge 80) {
+    $outLog = @(Write-Output "WARNING - Memory usage", "Memory usage is at $memoryUsage%")
     Write-Output $outLog
     exit 1
 } else {
-    $outLog = @(Write-Output "OK - Memory CPU", "CPU usage is at $cpuUsage%")
+    $outLog = @(Write-Output "OK - Memory usage", "Memory usage is at $memoryUsage%")
     Write-Output $outLog
     exit 0
 }

@@ -1,14 +1,17 @@
-#Requires -RunAsAdministrator
+param(
+    [Parameter(Mandatory = $true, Position = 0)]
+    [String] $Hostname
+)
 #==========================================================================================
 #
-# SCRIPT NAME        :     check_memory.ps1
+# SCRIPT NAME        :     NRPE_check-ping.ps1
 #
 # AUTHOR             :     Louis GAMBART
 # CREATION DATE      :     2023.07.05
 # RELEASE            :     v1.0.0
-# USAGE SYNTAX       :     .\check_memory.ps1
+# USAGE SYNTAX       :     .\NRPE_check-ping.ps1
 #
-# SCRIPT DESCRIPTION :     This script is used to check the memory usage of a host for NRPE.
+# SCRIPT DESCRIPTION :     This script is used to check the ping of a host for NRPE.
 #
 #==========================================================================================
 
@@ -34,25 +37,34 @@ $error.Clear()
 #                  #
 ####################
 
-function Get-MemoryUsage {
+function Get-HostPing {
     <#
     .SYNOPSIS
-    Get the memory usage of a host.
+    Get the ping of a host.
     .DESCRIPTION
-    This function is used to get the memory usage of a host.
+    This function is used to get the ping of a host.
     .INPUTS
-    None.
+    System.String: Hostname of the host.
     .OUTPUTS
-    System.String: Memory usage of the host.
+    System.String: Ping of the host.
     .EXAMPLE
-    Get-MemoryUsage
+    Get-HostPing -Hostname "127.0.0.1"
     #>
-    begin { $compObject = Get-WmiObject -Class Win32_OperatingSystem }
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Hostname
+    )
+    begin {}
     process {
-        $memory = ((($compObject.TotalVisibleMemorySize - $compObject.FreePhysicalMemory) * 100) / $compObject.TotalVisibleMemorySize)
-        $memory = [Math]::Round($memory, 2)
+        if ((Test-Connection -ComputerName $Hostname -Count 5 -Quiet) -eq $true) {
+            return "OK"
+        } else {
+            return "CRITICAL"
+        }
     }
-    end { return $memory }
+    end {}
 }
 
 
@@ -75,17 +87,17 @@ trap {
 #                         #
 ###########################
 
-$memoryUsage = Get-MemoryUsage
-if ($memoryUsage -ge 90) {
-    $outLog = @(Write-Output "CRITICAL - Memory usage", "Memory usage is at $memoryUsage%")
-    Write-Output $outLog
-    exit 2
-} elseif ($memoryUsage -lt 90 -and $memoryUsage -ge 80) {
-    $outLog = @(Write-Output "WARNING - Memory usage", "Memory usage is at $memoryUsage%")
-    Write-Output $outLog
-    exit 1
-} else {
-    $outLog = @(Write-Output "OK - Memory usage", "Memory usage is at $memoryUsage%")
+$pingStatus = Get-HostPing -Hostname $Hostname
+if ($pingStatus -eq "OK") {
+    $outLog = @("OK - Ping is OK", "Ping is OK to $Hostname")
     Write-Output $outLog
     exit 0
+} elseif ($pingStatus -eq "CRITICAL") {
+    $outLog = @("CRITICAL - Ping is CRITICAL", "Ping is CRITICAL to $Hostname")
+    Write-Output $outLog
+    exit 2
+} else {
+    $outLog = @("UNKNOWN", "Unknown error occured")
+    Write-Output $outLog
+    exit 3
 }

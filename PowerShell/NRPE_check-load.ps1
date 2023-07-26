@@ -1,17 +1,14 @@
-param(
-    [Parameter(Mandatory = $true, Position = 0)]
-    [String] $Hostname
-)
+#Requires -RunAsAdministrator
 #==========================================================================================
 #
-# SCRIPT NAME        :     check_ping.ps1
+# SCRIPT NAME        :     NRPE_check-load.ps1
 #
 # AUTHOR             :     Louis GAMBART
 # CREATION DATE      :     2023.07.05
 # RELEASE            :     v1.0.0
-# USAGE SYNTAX       :     .\check_ping.ps1
+# USAGE SYNTAX       :     .\NRPE_check-load.ps1
 #
-# SCRIPT DESCRIPTION :     This script is used to check the ping of a host for NRPE.
+# SCRIPT DESCRIPTION :     This script is used to check the CPU load of a host for NRPE.
 #
 #==========================================================================================
 
@@ -37,34 +34,25 @@ $error.Clear()
 #                  #
 ####################
 
-function Get-HostPing {
+function Get-CPULoad {
     <#
     .SYNOPSIS
-    Get the ping of a host.
+    Get the CPU load of a host.
     .DESCRIPTION
-    This function is used to get the ping of a host.
+    This function is used to get the CPU load of a host.
     .INPUTS
-    System.String: Hostname of the host.
+    None.
     .OUTPUTS
-    System.String: Ping of the host.
+    System.String: CPU load of the host.
     .EXAMPLE
-    Get-HostPing -Hostname "127.0.0.1"
+    Get-CPULoad
     #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
-        [String] $Hostname
-    )
-    begin {}
+    begin { $compObject = Get-WmiObject -Class CIM_Processor }
     process {
-        if ((Test-Connection -ComputerName $Hostname -Count 5 -Quiet) -eq $true) {
-            return "OK"
-        } else {
-            return "CRITICAL"
-        }
+        $cpu = $compObject.LoadPercentage | Measure-Object -Average
+        $cpu = [Math]::Round($cpu.Average, 2)
     }
-    end {}
+    end { return $cpu }
 }
 
 
@@ -87,17 +75,17 @@ trap {
 #                         #
 ###########################
 
-$pingStatus = Get-HostPing -Hostname $Hostname
-if ($pingStatus -eq "OK") {
-    $outLog = @("OK - Ping is OK", "Ping is OK to $Hostname")
-    Write-Output $outLog
-    exit 0
-} elseif ($pingStatus -eq "CRITICAL") {
-    $outLog = @("CRITICAL - Ping is CRITICAL", "Ping is CRITICAL to $Hostname")
+$cpuLoad = Get-CPULoad
+if ($cpuLoad -ge 2) {
+    $outLog = @(Write-Output "CRITICAL - CPU usage", "CPU usage is at $cpuUsage%")
     Write-Output $outLog
     exit 2
-} else {
-    $outLog = @("UNKNOWN", "Unknown error occured")
+} elseif ($cpuUsage -lt 2 -and $cpuUsage -ge 1) {
+    $outLog = @(Write-Output "WARNING - CPU usage", "CPU usage is at $cpuUsage%")
     Write-Output $outLog
-    exit 3
+    exit 1
+} else {
+    $outLog = @(Write-Output "OK - Memory CPU", "CPU usage is at $cpuUsage%")
+    Write-Output $outLog
+    exit 0
 }
