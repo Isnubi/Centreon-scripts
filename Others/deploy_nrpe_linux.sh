@@ -5,10 +5,11 @@
 #
 # AUTHOR             :     Louis GAMBART
 # CREATION DATE      :     2023.07.24
-# RELEASE            :     1.4.0
+# RELEASE            :     1.5.1
 # USAGE SYNTAX       :     .\deploy_nrpe_linux.sh
 #
 # SCRIPT DESCRIPTION :     This script is used to deploy NRPE on Linux.
+#                          Imagine for Debian 11 hosts
 #
 #==========================================================================================
 #
@@ -18,6 +19,8 @@
 # v1.2.0  2023.07.26 - Louis GAMBART - Redesign script output
 # v1.3.0  2023.07.26 - Louis GAMBART - Add check to each command
 # v1.4.0  2023.07.26 - Louis GAMBART - Replace hard config file by sed commands
+# v1.5.0  2023.07.27 - Louis GAMBART - Add check to commands
+# v1.5.1  2023.07.27 - Louis GAMBART - Update script description
 #
 #==========================================================================================
 
@@ -83,15 +86,37 @@ print_version () {
 
 clean_up () {
     # Clean up function for apt
-    echo -e -n "${Yellow}Cleaning up...${No_Color}"
+    echo -e "\n${Yellow}Cleaning up...${No_Color}"
+
+    echo -e -n "${Yellow}    * INFO - Cleaning up apt...${No_Color}"
     if ! apt autoremove -y > /dev/null 2>&1; then
-        echo -e "${Red} ERR - Unable to clean up${No_Color}"
+        echo -e "${Red} ERR - Unable to clean up apt${No_Color}"
         exit 1
     fi
-    rm /etc/apt/sources.list.d/centreon.list > /dev/null 2>&1
-    rm /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
-    apt update > /dev/null 2>&1
-    echo -e "${Green} OK\n${No_Color}"
+    echo -e "${Green} OK${No_Color}"
+
+    echo -e -n "${Yellow}    * INFO - Cleaning up sources...${No_Color}"
+    if ! rm /etc/apt/sources.list.d/centreon.list > /dev/null 2>&1; then
+        echo -e "${Red} ERR - Unable to clean up sources${No_Color}"
+        exit 1
+    fi
+    echo -e "${Green} OK${No_Color}"
+
+    echo -e -n "${Yellow}    * INFO - Cleaning up GPG key...${No_Color}"
+    if ! rm /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1; then
+        echo -e "${Red} ERR - Unable to clean up GPG key${No_Color}"
+        exit 1
+    fi
+    echo -e "${Green} OK${No_Color}"
+
+    echo -e -n "${Yellow}    * INFO - Updating packages list...${No_Color}"
+    if ! apt update > /dev/null 2>&1; then
+        echo -e "${Red} ERR - Unable to update packages list${No_Color}"
+        exit 1
+    fi
+    echo -e "${Green} OK${No_Color}"
+
+    echo -e "\n${Yellow}Cleaning up...${Green} OK\n${No_Color}"
 }
 
 
@@ -103,8 +128,12 @@ install_nrpe () {
     if id "centreon-engine" >/dev/null 2>&1; then
         echo -e "${Orange} WARN - User 'centreon-engine' already exist${No_Color}"
     else
-        echo -e "${Yellow} OK${No_Color}"
-        useradd --create-home centreon-engine
+        if ! useradd --create-home centreon-engine > /dev/null 2>&1; then
+            echo -e "${Red} ERR - Unable to create user 'centreon-engine'${No_Color}"
+            exit 1
+        else
+            echo -e "${Green} OK${No_Color}"
+        fi
     fi
 
     echo -e -n "${Yellow}    * INFO - Installing needed packages...${No_Color}"
@@ -239,11 +268,15 @@ install_script () {
     echo -e -n "${Yellow}    * INFO - Changing NRPE scripts permissions...${No_Color}"
     if ! chmod +x /usr/lib/centreon/plugins/NRPE_* > /dev/null 2>&1; then
         echo -e "${Red} ERR - Unable to change NRPE scripts permissions${No_Color}"
+        exit 1
     fi
     echo -e "${Green} OK${No_Color}"
 
     echo -e -n "${Yellow}    * INFO - Removing Centreon-scripts temporary directory...${No_Color}"
-    rm -rf /tmp/Centreon-scripts
+    if ! rm -rf /tmp/Centreon-scripts; then
+        echo -e "${Red} ERR - Unable to remove Centreon-scripts temporary directory${No_Color}"
+        exit 1
+    fi
     echo -e "${Green} OK${No_Color}"
 
     echo -e "\n${Yellow}Installing NRPE custom script...${Green} OK\n\n${No_Color}"
