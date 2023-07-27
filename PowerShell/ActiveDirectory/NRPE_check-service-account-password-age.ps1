@@ -1,11 +1,11 @@
 #==========================================================================================
 #
-# SCRIPT NAME        :     Check-AD-Service-Account-Password-Expiration.ps1
+# SCRIPT NAME        :     NRPE_check-service-account-password-age.ps1
 #
 # AUTHOR             :     Louis GAMBART
 # CREATION DATE      :     2023.04.10
 # RELEASE            :     v2.0.0
-# USAGE SYNTAX       :     .\Check-AD-Service-Account-Password-Expiration.ps1
+# USAGE SYNTAX       :     .\NRPE_check-service-account-password-age.ps1
 #
 # SCRIPT DESCRIPTION :     This script checks the expiration date of the password of the service in Active Directory in order to monitor them via NRPE.
 #

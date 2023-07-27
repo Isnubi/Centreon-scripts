@@ -1,11 +1,11 @@
 #==========================================================================================
 #
-# SCRIPT NAME        :     NRPE_check_group_treshold.ps1
+# SCRIPT NAME        :     NRPE_check-group-treshold.ps1
 #
 # AUTHOR             :     Louis GAMBART
 # CREATION DATE      :     2023.07.10
 # RELEASE            :     v2.0.0
-# USAGE SYNTAX       :     .\NRPE_check_group_treshold.ps1
+# USAGE SYNTAX       :     .\NRPE_check-group-treshold.ps1
 #
 # SCRIPT DESCRIPTION :     This script is used to check if an AD group has reached a threshold of users in it.
 #
