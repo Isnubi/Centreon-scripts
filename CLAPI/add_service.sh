@@ -5,7 +5,7 @@
 #
 # AUTHOR             :     Louis GAMBART
 # CREATION DATE      :     2023.07.05
-# RELEASE            :     1.1.0
+# RELEASE            :     1.2.0
 # USAGE SYNTAX       :     .\Centreon_add_service_to_host_by_groupname.sh
 #
 # SCRIPT DESCRIPTION :     This script add a service to all the host in a host group in Centreon
@@ -15,6 +15,7 @@
 #                 - RELEASE NOTES -
 # v1.0.0  2023.07.05 - Louis GAMBART - Initial version
 # v1.1.0  2023.07.06 - Louis GAMBART - Add options for all the mandatory variables
+# v1.2.0  2023.07.27 - Louis GAMBART - Add possibility to change a service macro value
 #
 #==========================================================================================
 
@@ -209,6 +210,13 @@ for HOST in ${HOSTS}; do
     else
         echo -e "${Green}Service ${SERVICE_NAME} added to the host ${HOST}${No_Color}\n"
     fi
+    # Uncomment this if you want to custom a service macro
+    # Don't forget to change the macro name and the value
+    #if ! centreon -u "${CENTREON_LOGIN}" -p "${CENTREON_PASSWORD}" -o SERVICE -a setmacro -v "${HOST};${SERVICE_NAME};_CUSTOM_SERVICE_MACRO;CUSTOM_VALUE" ; then
+    #    echo -e "${Red}Error while adding the custom macro to the service ${SERVICE_NAME} on the host ${HOST}${No_Color}\n"
+    #else
+    #    echo -e "${Green}Custom macro added to the service ${SERVICE_NAME} on the host ${HOST}${No_Color}\n"
+    #fi
 done
 
 echo -e "${Green}Script finished${No_Color}"
